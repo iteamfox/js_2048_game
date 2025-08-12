@@ -35,7 +35,6 @@ export default class Game {
   addRandomTile() {
     const emptyCells = [];
 
-    // Крок 1: знайди всі порожні клітинки
     for (let r = 0; r < 4; r++) {
       for (let c = 0; c < 4; c++) {
         if (this.board[r][c] === 0) {
@@ -48,11 +47,9 @@ export default class Game {
       return;
     }
 
-    // Крок 2: вибери випадкову порожню клітинку
     const randomIndex = Math.floor(Math.random() * emptyCells.length);
     const { row, col } = emptyCells[randomIndex];
 
-    // Крок 3: встав 2 або 4
     const newValue = Math.random() < 0.9 ? 2 : 4;
 
     this.board[row][col] = newValue;
@@ -70,7 +67,7 @@ export default class Game {
           withoutZeros[i] = withoutZeros[i] + withoutZeros[i + 1];
           this.score += withoutZeros[i];
           withoutZeros[i + 1] = 0;
-          i++; // пропускаємо наступний
+          i++;
         }
       }
 
@@ -109,7 +106,7 @@ export default class Game {
           withoutZeros[i] = withoutZeros[i] + withoutZeros[i + 1];
           this.score += withoutZeros[i];
           withoutZeros[i + 1] = 0;
-          i++; // пропускаємо наступний
+          i++;
         }
       }
 
@@ -156,7 +153,7 @@ export default class Game {
           withoutZeros[i] = withoutZeros[i] + withoutZeros[i + 1];
           this.score += withoutZeros[i];
           withoutZeros[i + 1] = 0;
-          i++; // пропускаємо наступний
+          i++;
         }
       }
 
@@ -208,7 +205,7 @@ export default class Game {
           withoutZeros[i] = withoutZeros[i] + withoutZeros[i + 1];
           this.score += withoutZeros[i];
           withoutZeros[i + 1] = 0;
-          i++; // пропускаємо наступний
+          i++;
         }
       }
 
@@ -243,31 +240,26 @@ export default class Game {
   }
 
   checklose() {
-    // 1. Перевіряємо, чи є хоча б одна порожня клітинка (0)
     for (let row = 0; row < 4; row++) {
       for (let col = 0; col < 4; col++) {
         if (this.board[row][col] === 0) {
-          return false; // Ще є ходи, бо є пусті клітинки
+          return false;
         }
       }
     }
 
-    // 2. Перевіряємо, чи є суміжні однакові числа по горизонталі та вертикалі
     for (let row = 0; row < 4; row++) {
       for (let col = 0; col < 4; col++) {
-        // Перевірка по горизонталі (крім останньої колонки)
         if (col < 3 && this.board[row][col] === this.board[row][col + 1]) {
           return false;
         }
 
-        // Перевірка по вертикалі (крім останнього рядка)
         if (row < 3 && this.board[row][col] === this.board[row + 1][col]) {
           return false;
         }
       }
     }
 
-    // Якщо немає ні порожніх клітинок, ні можливості об'єднання — програш
     this.status = 'lose';
 
     return true;
@@ -322,9 +314,6 @@ export default class Game {
     return this.status;
   }
 
-  /**
-   * Starts the game.
-   */
   start() {
     this.score = 0;
     this.status = 'playing';
@@ -342,14 +331,10 @@ export default class Game {
     startMsg.classList.add('hidden');
   }
 
-  /**
-   * Resets the game.
-   */
   restart() {
     this.score = 0;
     this.status = 'playing';
 
-    // Скидаємо поле (незалежно від initialState)
     this.board = Array.from({ length: 4 }, () => [0, 0, 0, 0]);
 
     const restart = document.querySelector('.restart');
@@ -357,12 +342,10 @@ export default class Game {
     const loseMsg = document.querySelector('.message-lose');
     const winMsg = document.querySelector('.message-win');
 
-    // Сховай всі повідомлення
     loseMsg.classList.add('hidden');
     startMsg.classList.remove('hidden');
     winMsg?.classList.add('hidden');
 
-    // Зміни кнопку на Start
     restart.classList.add('start');
     restart.classList.remove('restart');
     restart.textContent = 'Start';

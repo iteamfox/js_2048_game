@@ -15,12 +15,9 @@ function render() {
       const value = game.board[row][col];
       const cell = cells[index];
 
-      // Ставимо текст
       cell.textContent = value === 0 ? '' : value;
-
       cell.className = 'field-cell';
 
-      // Додаємо клас-модифікатор з числом
       if (value !== 0) {
         cell.classList.add(`field-cell--${value}`);
       }
@@ -28,19 +25,30 @@ function render() {
   }
 }
 
-function lose() {
-  if (game.checklose()) {
-    const loseMsg = document.querySelector('.message-lose');
+function updateScoreUI() {
+  const uiScore = document.querySelector('.game-score');
 
-    loseMsg.classList.remove('hidden');
-  }
+  uiScore.textContent = game.getScore();
 }
 
-function win() {
-  if (game.checkWin()) {
-    const winMsg = document.querySelector('.message-win');
+function checkGameStatus() {
+  const gameStatus = game.getStatus();
 
+  const winMsg = document.querySelector('.message-win');
+  const loseMsg = document.querySelector('.message-lose');
+  const startMsg = document.querySelector('.message-start');
+
+  // Ukrywamy wszystkie komunikaty
+  winMsg.classList.add('hidden');
+  loseMsg.classList.add('hidden');
+  startMsg.classList.add('hidden');
+
+  if (gameStatus === 'win') {
     winMsg.classList.remove('hidden');
+  } else if (gameStatus === 'lose') {
+    loseMsg.classList.remove('hidden');
+  } else if (gameStatus === 'idle') {
+    startMsg.classList.remove('hidden');
   }
 }
 
@@ -50,40 +58,37 @@ startBtn.addEventListener('click', () => {
   } else {
     game.start();
   }
+
   render();
-  game.updateScore();
+  updateScoreUI();
+  checkGameStatus();
 });
 
 document.addEventListener('keydown', (ev) => {
-  if (ev.key === 'ArrowLeft') {
-    game.moveLeft();
-    render();
-    game.updateScore();
-    lose();
-    win();
+  let moved = false;
+
+  switch (ev.key) {
+    case 'ArrowLeft':
+      game.moveLeft();
+      moved = true;
+      break;
+    case 'ArrowRight':
+      game.moveRight();
+      moved = true;
+      break;
+    case 'ArrowUp':
+      game.moveUp();
+      moved = true;
+      break;
+    case 'ArrowDown':
+      game.moveDown();
+      moved = true;
+      break;
   }
 
-  if (ev.key === 'ArrowRight') {
-    game.moveRight();
+  if (moved) {
     render();
-    game.updateScore();
-    lose();
-    win();
-  }
-
-  if (ev.key === 'ArrowUp') {
-    game.moveUp();
-    render();
-    game.updateScore();
-    lose();
-    win();
-  }
-
-  if (ev.key === 'ArrowDown') {
-    game.moveDown();
-    render();
-    game.updateScore();
-    lose();
-    win();
+    updateScoreUI();
+    checkGameStatus();
   }
 });

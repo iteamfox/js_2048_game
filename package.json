@@ -13,7 +13,7 @@
     "lint": "npm run style-format && npm run format && mate-scripts lint",
     "test:only": "mate-scripts test",
     "build": "mate-scripts build",
-    "deploy": "cross-env NODE_ENV=production npx parcel build src/index.html --dist-dir dist --public-url ./",
+    "deploy": "mate-scripts deploy",
     "update": "mate-scripts update",
     "postinstall": "npm run update",
     "test": "npm run lint && npm run test:only"

@@ -4,91 +4,135 @@ import Game from '../modules/Game.class.js';
 
 const game = new Game();
 
-const startBtn = document.querySelector('.button--start');
+const scoreElement = document.querySelector('.game-score');
+const button = document.querySelector('.button');
+const tableBody = document.querySelector('tbody');
+const startMessage = document.querySelector('.message-start');
+const winMessage = document.querySelector('.message-win');
+const loseMessage = document.querySelector('.message-lose');
 
-function render() {
-  const cells = document.querySelectorAll('.field-cell');
+const render = () => {
+  const board = game.getState();
+  const score = game.getScore();
+  const rows = tableBody.querySelectorAll('tr');
 
-  for (let row = 0; row < 4; row++) {
-    for (let col = 0; col < 4; col++) {
-      const index = row * 4 + col;
-      const value = game.board[row][col];
-      const cell = cells[index];
+  scoreElement.textContent = score;
+
+  rows.forEach((row, rowIndex) => {
+    row.querySelectorAll('td').forEach((cell, colIndex) => {
+      const value = board[rowIndex][colIndex];
 
       cell.textContent = value === 0 ? '' : value;
-      cell.className = 'field-cell';
+      cell.className = `field-cell field-cell--${value}`;
+    });
+  });
+};
 
-      if (value !== 0) {
-        cell.classList.add(`field-cell--${value}`);
-      }
-    }
-  }
-}
-
-function updateScoreUI() {
-  const uiScore = document.querySelector('.game-score');
-
-  uiScore.textContent = game.getScore();
-}
-
-function checkGameStatus() {
+const updateUi = () => {
   const gameStatus = game.getStatus();
 
-  const winMsg = document.querySelector('.message-win');
-  const loseMsg = document.querySelector('.message-lose');
-  const startMsg = document.querySelector('.message-start');
+  startMessage.classList.toggle('hidden', gameStatus !== 'idle');
+  winMessage.classList.toggle('hidden', gameStatus !== 'win');
+  loseMessage.classList.toggle('hidden', gameStatus !== 'game over');
 
-  // Ukrywamy wszystkie komunikaty
-  winMsg.classList.add('hidden');
-  loseMsg.classList.add('hidden');
-  startMsg.classList.add('hidden');
-
-  if (gameStatus === 'win') {
-    winMsg.classList.remove('hidden');
-  } else if (gameStatus === 'lose') {
-    loseMsg.classList.remove('hidden');
-  } else if (gameStatus === 'idle') {
-    startMsg.classList.remove('hidden');
+  if (gameStatus === 'playing') {
+    button.textContent = 'Restart';
+    button.className = 'button restart';
   }
-}
+};
 
-startBtn.addEventListener('click', () => {
-  if (startBtn.classList.contains('restart')) {
-    game.restart();
-  } else {
-    game.start();
+const handleMove = (direction) => {
+  if (game.getStatus() === 'game over') {
+    return;
   }
 
-  render();
-  updateScoreUI();
-  checkGameStatus();
-});
-
-document.addEventListener('keydown', (ev) => {
-  let moved = false;
-
-  switch (ev.key) {
-    case 'ArrowLeft':
-      game.moveLeft();
-      moved = true;
-      break;
-    case 'ArrowRight':
-      game.moveRight();
-      moved = true;
-      break;
-    case 'ArrowUp':
-      game.moveUp();
-      moved = true;
-      break;
-    case 'ArrowDown':
-      game.moveDown();
-      moved = true;
-      break;
-  }
+  const moved = game.move(direction);
 
   if (moved) {
     render();
-    updateScoreUI();
-    checkGameStatus();
+    updateUi();
   }
+};
+
+button.addEventListener('click', () => {
+  game.start();
+  render();
+  updateUi();
 });
+
+document.addEventListener('keydown', (e) => {
+  let direction;
+
+  switch (e.key) {
+    case 'ArrowUp':
+      direction = 'Up';
+      break;
+    case 'ArrowDown':
+      direction = 'Down';
+      break;
+    case 'ArrowLeft':
+      direction = 'Left';
+      break;
+    case 'ArrowRight':
+      direction = 'Right';
+      break;
+    default:
+      return;
+  }
+
+  e.preventDefault();
+
+  handleMove(direction);
+});
+
+const continueButton = winMessage.querySelector('.keep-playing');
+
+continueButton.addEventListener('click', () => {
+  game.continuePlaying();
+  winMessage.classList.add('hidden');
+});
+
+// MOBILA
+
+let touchStartX = 0;
+let touchStartY = 0;
+const gameTable = document.querySelector('.game-field');
+
+gameTable.addEventListener(
+  'touchstart',
+  (e) => {
+    e.preventDefault();
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  },
+  { passive: false },
+);
+
+gameTable.addEventListener('touchend', (e) => {
+  e.preventDefault();
+
+  const touchEndX = e.changedTouches[0].clientX;
+  const touchEndY = e.changedTouches[0].clientY;
+
+  handleSwipe(touchEndX, touchEndY);
+});
+
+function handleSwipe(endX, endY) {
+  const deltaX = endX - touchStartX;
+  const deltaY = endY - touchStartY;
+  const swipeThreshold = 50;
+
+  if (Math.abs(deltaX) > Math.abs(deltaY)) {
+    if (deltaX > swipeThreshold) {
+      handleMove('Right');
+    } else if (deltaX < -swipeThreshold) {
+      handleMove('Left');
+    }
+  } else {
+    if (deltaY > swipeThreshold) {
+      handleMove('Down');
+    } else if (deltaY < -swipeThreshold) {
+      handleMove('Up');
+    }
+  }
+}
